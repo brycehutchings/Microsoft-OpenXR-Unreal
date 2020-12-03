@@ -15,8 +15,11 @@
 #include "ShaderCore.h"
 #include "SpeechPlugin.h"
 #include "SpatialMappingPlugin.h"
+#include "SecondaryViewConfiguration.h"
 
 #define LOCTEXT_NAMESPACE "FMicrosoftOpenXRModule"
+
+DEFINE_LOG_CATEGORY(LogMicrosoftOpenXR)
 
 namespace MicrosoftOpenXR
 {
@@ -29,6 +32,7 @@ namespace MicrosoftOpenXR
 		{
 			SpatialAnchorPlugin.Register();
 			HandMeshPlugin.Register();
+			SecondaryViewConfigurationPlugin.Register();
 #if PLATFORM_WINDOWS || PLATFORM_HOLOLENS
 			QRTrackingPlugin.Register();
 			LocatableCamPlugin.Register();
@@ -54,6 +58,7 @@ namespace MicrosoftOpenXR
 
 			SpatialAnchorPlugin.Unregister();
 			HandMeshPlugin.Unregister();
+			SecondaryViewConfigurationPlugin.Unregister();
 #if PLATFORM_WINDOWS || PLATFORM_HOLOLENS
 			QRTrackingPlugin.Unregister();
 			LocatableCamPlugin.Unregister();
@@ -70,6 +75,7 @@ namespace MicrosoftOpenXR
 #endif
 		}
 
+		FSecondaryViewConfigurationPlugin SecondaryViewConfigurationPlugin;
 		FHandMeshPlugin HandMeshPlugin;
 		FSpatialAnchorPlugin SpatialAnchorPlugin;
 #if PLATFORM_WINDOWS || PLATFORM_HOLOLENS

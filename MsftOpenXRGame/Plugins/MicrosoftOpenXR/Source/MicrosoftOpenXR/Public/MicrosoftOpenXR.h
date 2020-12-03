@@ -10,6 +10,8 @@
 
 #include "MicrosoftOpenXR.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogMicrosoftOpenXR, Log, All);
+
 USTRUCT(BlueprintType, Category = "MicrosoftOpenXR|OpenXR")
 struct FKeywordInput
 {
