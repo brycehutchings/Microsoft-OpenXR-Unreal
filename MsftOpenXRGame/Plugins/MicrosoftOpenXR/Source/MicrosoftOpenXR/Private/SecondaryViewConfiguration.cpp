@@ -142,7 +142,8 @@ namespace MicrosoftOpenXR
 			if (GameViewState.active != RenderViewState.active)
 			{
 				UE_LOG(LogMicrosoftOpenXR, Log, TEXT("Secondary view configuration %s changed to %s"),
-					ViewConfigTypeToString(RenderViewState.viewConfigurationType), RenderViewState.active ? "active" : "inactive");
+					ViewConfigTypeToString(RenderViewState.viewConfigurationType),
+					RenderViewState.active ? TEXT("active") : TEXT("inactive"));
 			}
 		}
 
