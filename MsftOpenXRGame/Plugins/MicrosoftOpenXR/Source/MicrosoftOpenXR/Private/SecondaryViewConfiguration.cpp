@@ -1,6 +1,7 @@
 #include "SecondaryViewConfiguration.h"
-#include "OpenXRCore.h"
+
 #include "MicrosoftOpenXR.h"
+#include "OpenXRCore.h"
 
 namespace
 {
@@ -232,15 +233,6 @@ namespace MicrosoftOpenXR
 	{
 		PiplinedFrameState& ViewConfigurationFrameState = GetSecondaryViewStateForThread();
 
-		for (int i = 0; i < ViewConfigurationFrameState.SecondaryViewConfigStates.Num(); i++)
-		{
-			const XrSecondaryViewConfigurationStateMSFT& ViewConfigState = ViewConfigurationFrameState.SecondaryViewConfigStates[i];
-			if (!ViewConfigState.active)
-			{
-				continue;
-			}
-		}
-
 		SecondaryProjectionLayers.Reset();
 		int AllViewLocationsIndex = 0;
 
@@ -255,21 +247,32 @@ namespace MicrosoftOpenXR
 			TArray<XrView>& SecondaryViews = ViewConfigurationFrameState.SecondaryViews[i];
 
 			TArray<XrCompositionLayerProjectionView> ProjectionViews;
-			ProjectionViews.SetNumUninitialized(SecondaryViews.Num());
 			for (int ViewIndex = 0; ViewIndex < SecondaryViews.Num(); ViewIndex++)
 			{
-				ProjectionViews[ViewIndex] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
-				ProjectionViews[ViewIndex].fov = SecondaryViews[ViewIndex].fov;
-				ProjectionViews[ViewIndex].pose = SecondaryViews[ViewIndex].pose;
-
 				// InColorImages should be a 1:1 match with the SecondaryViews.
-				ensure(AllViewLocationsIndex < InColorImages.Num());
-				ProjectionViews[ViewIndex].subImage = InColorImages[AllViewLocationsIndex];
+				if (AllViewLocationsIndex >= InColorImages.Num() ||
+					InColorImages[AllViewLocationsIndex].swapchain == XR_NULL_HANDLE)
+				{
+					// The allocation of the swapchain takes one frame to bring up so this is expected for one frame.
+					UE_LOG(LogMicrosoftOpenXR, Warning, TEXT("No ColorImage available for active secondary view configuration %s"),
+						ViewConfigTypeToString(ViewConfigState.viewConfigurationType));
+					break;
+				}
+
+				XrCompositionLayerProjectionView ProjectionView{XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
+				ProjectionView.fov = SecondaryViews[ViewIndex].fov;
+				ProjectionView.pose = SecondaryViews[ViewIndex].pose;
+				ProjectionView.subImage = InColorImages[AllViewLocationsIndex];
+				ProjectionViews.Add(ProjectionView);
+
 				AllViewLocationsIndex++;
 			}
 
-			SecondaryProjectionLayers.Add(SingleProjectionLayer(
-				ViewConfigState.viewConfigurationType, ViewConfigurationFrameState.ViewSpace, ProjectionViews));
+			if (ProjectionViews.Num() == SecondaryViews.Num())
+			{
+				SecondaryProjectionLayers.Add(SingleProjectionLayer(
+					ViewConfigState.viewConfigurationType, ViewConfigurationFrameState.ViewSpace, std::move(ProjectionViews)));
+			}
 		}
 
 		// Now that the SecondaryProjectionLayers TArray is completed and there is no more chance of resize, set up the
