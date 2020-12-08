@@ -23,6 +23,7 @@ namespace MicrosoftOpenXR
 				Layer.space = Space;
 				Layer.viewCount = Views.Num();
 				Layer.views = Views.GetData();
+				Layer.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 
 				LayerPtrs.Reset();
 				LayerPtrs.Add(reinterpret_cast<const XrCompositionLayerBaseHeader*>(&Layer));
